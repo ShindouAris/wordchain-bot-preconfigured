@@ -98,6 +98,7 @@ class WordChain(commands.Cog):
         except ChainNotMatchException:
             await message.reply(f"❌ Hãy chọn một từ khác bắt đầu bằng `{chain.previous_last_character}` nhé", fail_if_not_exists=False, delete_after=10)
         except IllegalWordException:
+            await message.add_reaction("<:catto_depress:1233102216940884019>")
             await message.reply("❌ Vui lòng nhập một từ tiếng Anh hợp lệ, tối thiểu 3 chữ cái và không chứa kí tự đặc biệt", fail_if_not_exists=False, delete_after=10)
             
         
