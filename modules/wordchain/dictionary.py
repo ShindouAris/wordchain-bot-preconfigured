@@ -19,7 +19,7 @@ class Dictionary:
     __slots__ = "storage"
     
     def __init__(self):
-        with open("wordlist.txt") as f:
+        with open("modules/wordchain/wordlist.txt") as f:
             index = []
             for line in f.readlines():
                 if line.strip().__len__() == 0: continue
