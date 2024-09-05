@@ -69,6 +69,7 @@ class WordChain(commands.Cog):
         self.dictionary: Dictionary = Dictionary()
         self.storage: dict[int, GuildChain] = {}
         self.guild_data: GuildData = bot.guild_data
+        self.combo = 0
         
     @commands.Cog.listener()
     async def on_message(self, message: disnake.Message):
@@ -90,16 +91,37 @@ class WordChain(commands.Cog):
             if not self.dictionary.check(msg_split[0]): raise IllegalWordException()
             chain.add_word(msg_split[0], message.jump_url, message.author.id)
             await message.add_reaction("✅")
+            self.combo += 1
+            if self.combo in (10, 50, 100, 1000, 2000, 6000, 9999):
+                await message.reply("Tuyệt vời, combo của máy chủ hiện tại là: {}".format(self.combo), fail_if_not_exists=True, delete_after=10)
         except DuplicateWordError as err:
             await message.add_reaction("<:Hoshino_derp:1233102226197581874>")
-            await message.reply(f"⚠️ Từ này đã được sử dụng {err.previous_message_url}", fail_if_not_exists=False, delete_after=10)
+            if self.combo:
+                txt = f", bạn đã mất chuỗi {self.combo} từ liên tiếp đúng và không lặp lại"
+            else:
+                txt = ""
+            await message.reply(f"⚠️ Từ này đã được sử dụng {err.previous_message_url}{txt}", fail_if_not_exists=False, delete_after=10)
+            self.combo = 0
         except CurrentIsLastPlayer:
             await message.reply(f"🕒 Vui lòng đợi người chơi khác điền từ của họ trước khi điền từ của bạn vào nhé", fail_if_not_exists=True, delete_after=10)
         except ChainNotMatchException:
-            await message.reply(f"❌ Hãy chọn một từ khác bắt đầu bằng `{chain.previous_last_character}` nhé", fail_if_not_exists=False, delete_after=10)
+            if self.combo:
+                txt = f", bạn đã mất chuỗi {self.combo} từ liên tiếp đúng và không lặp lại"
+            else:
+                txt = ""
+            await message.reply(f"❌ Hãy chọn một từ khác bắt đầu bằng `{chain.previous_last_character}` nhé{txt}", fail_if_not_exists=False, delete_after=10)
+            self.combo = 0
         except IllegalWordException:
-            await message.add_reaction("<:catto_depress:1233102216940884019>")
-            await message.reply("❌ Vui lòng nhập một từ tiếng Anh hợp lệ, tối thiểu 3 chữ cái và không chứa kí tự đặc biệt", fail_if_not_exists=False, delete_after=10)
+            if self.combo:
+                txt = f", bạn đã mất chuỗi {self.combo} từ liên tiếp đúng và không lặp lại"
+            else:
+                txt = ""
+            try:
+                await message.add_reaction("<:catto_depress:1233102216940884019>")
+            except Exception:
+                pass
+            await message.reply(f"❌ Vui lòng nhập một từ tiếng Anh hợp lệ, tối thiểu 3 chữ cái và không chứa kí tự đặc biệt{txt}", fail_if_not_exists=False, delete_after=10)
+            self.combo = 0
             
         
     @commands.slash_command(
