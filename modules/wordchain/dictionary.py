@@ -24,6 +24,7 @@ class Dictionary:
             for line in f.readlines():
                 if line.strip().__len__() == 0: continue
                 try: index.append(reform_word(line))
+                except IllegalWordException: pass
                 except Exception as e: logger.error(repr(e))
             self.storage = Trie(index)
             logger.info(f"Đã nạp {index.__len__()} từ vựng tiếng Anh vào bộ nhớ")
