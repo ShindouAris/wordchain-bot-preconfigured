@@ -8,6 +8,8 @@ from .dictionary import Dictionary, IllegalWordException, reform_word
 from utils.cache import LRUCache
 from utils.guild_data import GuildData
 from utils.configuration import EPHEMERAL_AUDIT_ACTION, EPHEMERAL_ERROR_ACTION
+from cambridge_dictionary import Cambridge_Dictionary
+from cambridge_dictionary.error import ApiError, NotFoundWord
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class GuildChain(LRUCache):
         super().__init__(5000, -1)
         
     def add_word(self, word: str, message_url: str, player_id: int):
-        if self.previous_player_id == player_id: raise CurrentIsLastPlayer()
+        # if self.previous_player_id == player_id: raise CurrentIsLastPlayer()
         word = reform_word(word)
         if not word.startswith(self.previous_last_character): raise ChainNotMatchException()
         try: data = self.get(word)
@@ -70,6 +72,7 @@ class WordChain(commands.Cog):
         self.storage: dict[int, GuildChain] = {}
         self.guild_data: GuildData = bot.guild_data
         self.combo = 0
+        self.remote_dictionary = Cambridge_Dictionary()
         
     @commands.Cog.listener()
     async def on_message(self, message: disnake.Message):
@@ -88,7 +91,15 @@ class WordChain(commands.Cog):
         chain = self.storage[guild_id]
         try:
             if msg_split.__len__() != 1 or msg_split[0].__len__() < 3 or (not msg_split[0].isalpha()): raise IllegalWordException()
-            if not self.dictionary.check(msg_split[0]): raise IllegalWordException()
+            if not self.dictionary.check(msg_split[0]):
+                try:
+                    check = await self.remote_dictionary.dictionary_check(msg_split[0])
+                except NotFoundWord:
+                    raise IllegalWordException()
+                except ApiError:
+                    raise IllegalWordException()
+                if not check:
+                    raise IllegalWordException()
             chain.add_word(msg_split[0], message.jump_url, message.author.id)
             await message.add_reaction("✅")
             self.combo += 1
