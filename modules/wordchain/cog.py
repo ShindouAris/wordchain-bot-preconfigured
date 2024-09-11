@@ -38,7 +38,7 @@ class GuildChain(LRUCache):
         super().__init__(5000, -1)
         
     def add_word(self, word: str, message_url: str, player_id: int):
-        # if self.previous_player_id == player_id: raise CurrentIsLastPlayer()
+        if self.previous_player_id == player_id: raise CurrentIsLastPlayer()
         word = reform_word(word)
         if not word.startswith(self.previous_last_character): raise ChainNotMatchException()
         try: data = self.get(word)
