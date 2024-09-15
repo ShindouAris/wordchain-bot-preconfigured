@@ -1,7 +1,7 @@
 from typing import Optional
 from utils.database import Database
 from utils.cache import LRUCache
-
+from aiomysql import InterfaceError
 import logging
 
 
@@ -71,6 +71,10 @@ class GuildData:
             for data in result:
                 entity.reaction_role_messages.add(data[0])
             return entity
+        except InterfaceError as err:
+            self.logger.error("Mất kết nối khỏi cơ sở dữ liệu")
+            if "Not connected" in str(err):
+                await self.database.reconnectDB()
         except Exception as err:
             self.logger.error(f"Truy vấn dữ liệu cho máy chủ với ID: {guild_id} thất bại\n" + repr(err))
             return None

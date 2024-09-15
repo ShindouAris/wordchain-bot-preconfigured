@@ -13,6 +13,7 @@ class Database:
     def __init__(self, environ, loop: asyncio.AbstractEventLoop):
         self.logger = logging.getLogger(__name__)
         self.loop = loop
+        self.environ = environ
 
         self.action_lock = asyncio.Lock()
 
@@ -29,6 +30,20 @@ class Database:
 
         future = asyncio.ensure_future(self.connect(host, port, username, password, schema), loop=loop)
         future.add_done_callback(self.connect_callback)
+
+    async def reconnectDB(self):
+        self.logger.info("Đang kết nối lại với cơ sở dữ liệu")
+
+        host = self.environ["MYSQL_HOST"]
+        port = int(self.environ["MYSQL_PORT"])
+        username = self.environ["MYSQL_USERNAME"]
+        password = self.environ["MYSQL_PASSWORD"]
+        schema = self.environ["MYSQL_SCHEMA"]
+
+        async def wrapper():
+            self.connection = await aiomysql.connect(host=host, port=port, user=username, password=password, db=schema, autocommit=True)
+
+        await asyncio.wait_for(wrapper(), 10)
 
     async def connect(self, host, port, username, password, schema) -> None:
         self.logger.info("Đang kết nối tới cơ sở dữ liệu MySQL")
