@@ -29,6 +29,8 @@ def check_input(msg_content: str):
         return False
     if msg_content.startswith(special_characters):
         return False
+    if msg_content.startswith("http"):
+        return False
 
     return True
 
