@@ -8,3 +8,4 @@ emoji==2.12.1
 google-generativeai==0.7.2
 mafic==2.10.0
 git+https://github.com/ShindouAris/cambridge_dictionary.git
+git+https://github.com/ShindouAris/oxford_dictionary.git

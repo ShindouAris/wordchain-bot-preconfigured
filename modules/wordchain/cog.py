@@ -9,6 +9,7 @@ from utils.cache import LRUCache
 from utils.guild_data import GuildData
 from utils.configuration import EPHEMERAL_AUDIT_ACTION, EPHEMERAL_ERROR_ACTION
 from cambridge_dictionary import Cambridge_Dictionary
+from oxford_dictionary import OxfordDictionary
 from cambridge_dictionary.error import ApiError, NotFoundWord
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -72,7 +73,8 @@ class WordChain(commands.Cog):
         self.storage: dict[int, GuildChain] = {}
         self.guild_data: GuildData = bot.guild_data
         self.combo = 0
-        self.remote_dictionary = Cambridge_Dictionary()
+        self.cambridge_dictionary = Cambridge_Dictionary()
+        self.oxford_dictionary = OxfordDictionary()
 
         
     @commands.Cog.listener()
@@ -95,11 +97,9 @@ class WordChain(commands.Cog):
             if msg_split.__len__() != 1 or msg_split[0].__len__() < 3 or (not msg_split[0].isalpha()): raise IllegalWordException()
             if not self.dictionary.check(msg_split[0]):
                 try:
-                    check = await self.remote_dictionary.dictionary_check(msg_split[0])
-                except NotFoundWord:
-                    raise IllegalWordException()
-                except ApiError:
-                    raise IllegalWordException()
+                    check = await self.cambridge_dictionary.dictionary_check(msg_split[0])
+                except NotFoundWord or ApiError:
+                    check = await self.oxford_dictionary.check_word_async(msg_split[0])
                 if not check:
                     raise IllegalWordException()
             chain.add_word(msg_split[0], message.jump_url, message.author.id)
