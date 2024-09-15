@@ -4,7 +4,7 @@ import disnake
 from disnake.ext import commands
 import logging
 
-from .dictionary import Dictionary, IllegalWordException, reform_word
+from .dictionary import Dictionary, IllegalWordException, reform_word, check_input
 from utils.cache import LRUCache
 from utils.guild_data import GuildData
 from utils.configuration import EPHEMERAL_AUDIT_ACTION, EPHEMERAL_ERROR_ACTION
@@ -27,7 +27,7 @@ class DuplicateWordError(Exception):
     def __init__(self, *args, word: str, previous_message_url = None):
         self.previous_message_url = previous_message_url
         super().__init__(f"Từ {word} đã được sử dụng trước đó.", *args)
-        
+
     
 class GuildChain(LRUCache):
     __slots__ = "chain", "previous_last_character", "previous_player_id"
@@ -73,6 +73,7 @@ class WordChain(commands.Cog):
         self.guild_data: GuildData = bot.guild_data
         self.combo = 0
         self.remote_dictionary = Cambridge_Dictionary()
+
         
     @commands.Cog.listener()
     async def on_message(self, message: disnake.Message):
@@ -83,7 +84,8 @@ class WordChain(commands.Cog):
         if not isinstance(message.channel, disnake.TextChannel): return
         guild_id = message.guild.id
         msg_content = message.content.strip()
-        if msg_content.startswith("."): return
+        if not check_input(msg_content):
+            return
         msg_split = msg_content.split()
         entity = await self.guild_data.get_guild(guild_id)
         if entity.wordchain_channel_id != message.channel.id: return

@@ -6,6 +6,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 class IllegalWordException(Exception):
     def __init__(self, *args, **kwargs):
         return super().__init__("Từ nhập vào không hợp lệ", *args, **kwargs)
+
+# For Testing
+class SpecialWordException(Exception):
+    def __init__(self, *args, **kwargs):
+        return super().__init__("Kết quả bạn nhập vào có chứa kí tự đặc biệt", *args, **kwargs)
         
 
 def reform_word(word: str) -> str:
@@ -13,6 +18,19 @@ def reform_word(word: str) -> str:
     word = word.strip().lower()
     if not word.isalpha(): raise IllegalWordException()
     return word
+
+def check_input(msg_content: str):
+    special_characters = (
+        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+',
+        '{', '}', '[', ']', '|', '\\', ';', ':', "'", '"', '<', '>', ',', '.', '/',
+        '?', '~', '`'
+    )
+    if " " in msg_content:
+        return False
+    if msg_content.startswith(special_characters):
+        return False
+
+    return True
 
 
 class Dictionary:
@@ -39,6 +57,10 @@ if __name__ == "__main__":
     while True:
         try:
             word = input("> ")
-            print(dictionary.check(word))
+            ch = check_input(word)
+            if not ch:
+                raise SpecialWordException()
+            else:
+                print(dictionary.check(word))
         except Exception as e:
             print(repr(e))
