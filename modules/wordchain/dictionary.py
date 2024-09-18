@@ -25,13 +25,25 @@ def check_input(msg_content: str):
         '{', '}', '[', ']', '|', '\\', ';', ':', "'", '"', '<', '>', ',', '.', '/',
         '?', '~', '`'
     )
+    vietnamese_characters: list = [
+        'ă', 'â', 'đ', 'ê', 'ô', 'ơ', 'ư',
+        'à', 'á', 'ả', 'ã', 'ạ', 'ằ', 'ắ', 'ẳ', 'ẵ', 'ặ',
+        'ầ', 'ấ', 'ẩ', 'ẫ', 'ậ', 'è', 'é', 'ẻ', 'ẽ', 'ẹ',
+        'ề', 'ế', 'ể', 'ễ', 'ệ', 'ì', 'í', 'ỉ', 'ĩ', 'ị',
+        'ò', 'ó', 'ỏ', 'õ', 'ọ', 'ồ', 'ố', 'ổ', 'ỗ', 'ộ',
+        'ờ', 'ớ', 'ở', 'ỡ', 'ợ', 'ù', 'ú', 'ủ', 'ũ', 'ụ',
+        'ừ', 'ứ', 'ử', 'ữ', 'ự', 'ỳ', 'ý', 'ỷ', 'ỹ', 'ỵ'
+    ]
     if " " in msg_content:
         return False
     if msg_content.startswith(special_characters):
         return False
     if msg_content.startswith("http"):
         return False
-
+    for char in msg_content:
+        for c in vietnamese_characters:
+            if str(char) == str(c):
+                return False
     return True
 
 
