@@ -129,10 +129,6 @@ class WordChain(commands.Cog):
                 txt = f", bạn đã mất chuỗi {self.combo} từ liên tiếp đúng và không lặp lại"
             else:
                 txt = ""
-            try:
-                await message.add_reaction("<:catto_depress:1233102216940884019>")
-            except Exception:
-                pass
             await message.reply(f"❌ Vui lòng nhập một từ tiếng Anh hợp lệ, tối thiểu 3 chữ cái và không chứa kí tự đặc biệt{txt}", fail_if_not_exists=False, delete_after=10)
             self.combo = 0
             
